@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Universal Turbo Racer</title>
+    <title>Turbo Racer Gamepad</title>
     <style>
         :root {
-            --road-width: 350px;
             --neon-blue: #00f2ff;
             --neon-pink: #ff0055;
+            --btn-size: clamp(60px, 15vw, 75px);
         }
 
         body {
-            background: #0a0a0f;
+            background: #050508;
             margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,128 +25,117 @@
             touch-action: none;
         }
 
-        /* Responsive Container */
-        .game-wrapper {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        /* --- UI TOP --- */
         .dashboard {
-            width: 90%;
             display: flex;
-            justify-content: space-around;
-            padding: 10px;
+            gap: 15px;
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--neon-blue);
-            border-radius: 15px;
+            padding: 10px 20px;
+            border-radius: 30px;
             margin-bottom: 10px;
-            font-size: clamp(14px, 4vw, 18px); /* Fluid typography */
+            border: 1px solid rgba(0, 242, 255, 0.3);
         }
+        .stat span { color: var(--neon-blue); font-weight: bold; }
 
+        /* --- GAME ROAD --- */
         .road {
             position: relative;
-            width: 90vw; 
-            max-width: 380px; 
-            height: 65vh; 
-            background: #1a1a1a;
-            border-left: 4px solid #333;
-            border-right: 4px solid #333;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        }
-
-        .line {
-            width: 2%;
-            height: 50px;
-            background: rgba(255,255,255,0.2);
-            position: absolute;
-            left: 49%;
-        }
-
-        .car {
-            position: absolute;
-            width: 45px;
-            height: 75px;
+            width: 95vw;
+            max-width: 400px;
+            height: 55vh;
+            background: #111;
+            border: 2px solid #333;
             border-radius: 8px;
-            z-index: 10;
+            overflow: hidden;
         }
 
-        .player {
-            background: var(--neon-pink);
-            box-shadow: 0 0 20px var(--neon-pink);
-            border: 2px solid white;
-        }
+        .car { position: absolute; width: 40px; height: 70px; border-radius: 6px; z-index: 10; }
+        .player { background: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); border: 2px solid #fff; }
+        .line { width: 4px; height: 40px; background: rgba(255,255,255,0.1); position: absolute; left: 50%; transform: translateX(-50%); }
 
-        /* Controller Styling */
-        .controls {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+        /* --- GAMEPAD LAYOUT (SIDE BY SIDE) --- */
+        .gamepad {
             margin-top: 15px;
-        }
-
-        .mobile-joystick {
-            display: flex;
-            gap: 20px;
-            margin-top: 10px;
-        }
-
-        .joy-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid var(--neon-blue);
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            user-select: none;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
         }
 
-        button {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
+        .btn {
+            width: var(--btn-size);
+            height: var(--btn-size);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            font-size: 1.2rem;
         }
 
-        button:active { background: var(--neon-blue); color: black; }
+        /* Movement Buttons */
+        .btn-move {
+            background: #222;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            box-shadow: 0 4px 0px #008899;
+        }
 
-        /* Hide mobile buttons on desktop if needed, but keeping for accessibility */
-        @media (min-width: 1024px) {
-            .mobile-joystick { margin-bottom: 20px; }
+        .btn-move:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0px #008899;
+            background: var(--neon-blue);
+            color: #000;
+        }
+
+        /* Side System Buttons (Start/Pause) */
+        .btn-sys {
+            background: transparent;
+            border: 1px solid #555;
+            color: #aaa;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .btn-sys:active:not(:disabled) {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .btn-sys:disabled { opacity: 0.2; cursor: not-allowed; }
+
+        .pulse { animation: pulse-border 1.5s infinite; color: white; border-color: white; }
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="game-wrapper">
-        <div class="dashboard">
-            <div>🏆 <span id="highScore">0</span></div>
-            <div>🔥 <span id="score">0</span></div>
-            <div>🏁 <span id="rank">6</span>/6</div>
-        </div>
+    <div class="dashboard">
+        <div class="stat">🏆 <span id="highScore">0</span></div>
+        <div class="stat">🔥 <span id="score">0</span></div>
+        <div class="stat">🏁 <span id="rank">6</span>/6</div>
+    </div>
 
-        <div class="road" id="road"></div>
+    <div class="road" id="road"></div>
 
-        <div class="mobile-joystick">
-            <div class="joy-btn" id="leftBtn">◀</div>
-            <div class="joy-btn" id="turboBtn">🚀</div>
-            <div class="joy-btn" id="rightBtn">▶</div>
-        </div>
+    <div class="gamepad">
+        <div class="btn btn-sys pulse" id="startBtn">Start</div>
+        
+        <div class="btn btn-move" id="leftBtn">◀</div>
+        <div class="btn btn-move" id="turboBtn">🚀</div>
+        <div class="btn btn-move" id="rightBtn">▶</div>
 
-        <div class="controls">
-            <button id="startBtn">Start</button>
-            <button id="pauseBtn" disabled>Pause</button>
-        </div>
+        <div class="btn btn-sys" id="pauseBtn">Pause</div>
     </div>
 
     <script>
@@ -160,154 +148,150 @@
 
         let gameRunning = false;
         let score = 0;
-        let highScore = localStorage.getItem('universalRacerScore') || 0;
+        let highScore = localStorage.getItem('turboHigh') || 0;
         highScoreDisplay.innerText = highScore;
 
         let roadBox = road.getBoundingClientRect();
-        let player = { x: 0, y: 0, speed: 7, turbo: false };
-        let enemyCars = [];
-        let roadLines = [];
-        let animationId;
+        let player = { x: 0, y: 0, speed: 8, turbo: false };
+        let enemies = [];
+        let lines = [];
+        const activeKeys = {};
 
         const playerCar = document.createElement('div');
         playerCar.classList.add('car', 'player');
         road.appendChild(playerCar);
 
-        function initPositions() {
+        function init() {
             roadBox = road.getBoundingClientRect();
-            player.x = (roadBox.width / 2) - 22;
-            player.y = roadBox.height - 100;
+            player.x = (roadBox.width / 2) - 20;
+            player.y = roadBox.height - 90;
             playerCar.style.left = player.x + "px";
             playerCar.style.top = player.y + "px";
-        }
 
-        function setupRoad() {
-            roadLines.forEach(l => l.remove());
-            roadLines = [];
-            for (let i = 0; i < 6; i++) {
-                let line = document.createElement('div');
-                line.classList.add('line');
-                line.y = i * 120;
-                line.style.top = line.y + "px";
-                road.appendChild(line);
-                roadLines.push(line);
+            // Clean & Build Road
+            lines.forEach(l => l.remove());
+            lines = [];
+            for(let i=0; i<6; i++) {
+                let l = document.createElement('div');
+                l.classList.add('line');
+                l.y = i * 120;
+                road.appendChild(l);
+                lines.push(l);
             }
-        }
 
-        function createEnemies() {
-            enemyCars.forEach(e => e.element.remove());
-            enemyCars = [];
+            // Create Enemies
+            enemies.forEach(e => e.el.remove());
+            enemies = [];
             const colors = ['#00d2ff', '#ffce00', '#00ff44', '#bc00ff', '#ffffff'];
-            for (let i = 0; i < 5; i++) {
-                let div = document.createElement('div');
-                div.classList.add('car', 'enemy');
-                div.style.backgroundColor = colors[i];
-                let enemy = {
-                    element: div,
-                    x: Math.random() * (roadBox.width - 50),
-                    y: (i * 200) * -1,
-                    speed: 3 + Math.random() * 3
-                };
-                road.appendChild(div);
-                enemyCars.push(enemy);
+            for(let i=0; i<5; i++) {
+                let el = document.createElement('div');
+                el.classList.add('car', 'enemy');
+                el.style.backgroundColor = colors[i];
+                let obj = { el, x: Math.random()*(roadBox.width-45), y: (i*180)*-1, s: 3+Math.random()*3 };
+                road.appendChild(el);
+                enemies.push(obj);
             }
         }
 
-        function update() {
+        function gameLoop() {
             if (!gameRunning) return;
 
-            // Move lines
-            roadLines.forEach(line => {
-                line.y += (player.turbo ? 15 : 6);
-                if (line.y >= roadBox.height) line.y = -100;
-                line.style.top = line.y + "px";
+            // Movement Logic
+            if (activeKeys['ArrowLeft'] || activeKeys['leftBtn']) {
+                if (player.x > 0) player.x -= player.speed;
+            }
+            if (activeKeys['ArrowRight'] || activeKeys['rightBtn']) {
+                if (player.x < (roadBox.width - 45)) player.x += player.speed;
+            }
+            player.turbo = !!(activeKeys['ArrowUp'] || activeKeys['turboBtn']);
+
+            // Update Road
+            lines.forEach(l => {
+                l.y += (player.turbo ? 16 : 7);
+                if (l.y > roadBox.height) l.y = -100;
+                l.style.top = l.y + "px";
             });
 
+            // Update Enemies
             let passed = 0;
-            enemyCars.forEach(enemy => {
-                enemy.y += (player.turbo ? enemy.speed + 6 : enemy.speed);
-                if (enemy.y > roadBox.height) {
-                    enemy.y = -200;
-                    enemy.x = Math.random() * (roadBox.width - 50);
+            enemies.forEach(en => {
+                en.y += (player.turbo ? en.s + 8 : en.s);
+                if (en.y > roadBox.height) {
+                    en.y = -200;
+                    en.x = Math.random() * (roadBox.width - 45);
                     score += 10;
-                    scoreDisplay.innerText = score;
-                    if (score > highScore) {
-                        highScore = score;
-                        highScoreDisplay.innerText = highScore;
-                        localStorage.setItem('universalRacerScore', highScore);
-                    }
+                    updateStats();
                 }
-                enemy.element.style.top = enemy.y + "px";
-                enemy.element.style.left = enemy.x + "px";
-
-                if (isCollide(playerCar, enemy.element)) gameOver();
-                if (player.y > enemy.y) passed++;
+                en.el.style.top = en.y + "px";
+                en.el.style.left = en.x + "px";
+                if (isCollide(playerCar, en.el)) endGame();
+                if (player.y > en.y) passed++;
             });
 
             rankDisplay.innerText = 6 - passed;
             playerCar.style.left = player.x + "px";
-            animationId = requestAnimationFrame(update);
+            requestAnimationFrame(gameLoop);
         }
 
         function isCollide(a, b) {
-            let aRect = a.getBoundingClientRect();
-            let bRect = b.getBoundingClientRect();
-            return !(aRect.bottom < bRect.top || aRect.top > bRect.bottom || aRect.right < bRect.left || aRect.left > bRect.right);
+            let r1 = a.getBoundingClientRect();
+            let r2 = b.getBoundingClientRect();
+            return !(r1.bottom < r2.top || r1.top > r2.bottom || r1.right < r2.left || r1.left > r2.right);
         }
 
-        // --- CONTROLS ---
-        const keys = {};
-        let touchLeft = false, touchRight = false;
-
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-
-        // Touch Listeners
-        document.getElementById('leftBtn').ontouchstart = () => touchLeft = true;
-        document.getElementById('leftBtn').ontouchend = () => touchLeft = false;
-        document.getElementById('rightBtn').ontouchstart = () => touchRight = true;
-        document.getElementById('rightBtn').ontouchend = () => touchRight = false;
-        document.getElementById('turboBtn').ontouchstart = () => player.turbo = true;
-        document.getElementById('turboBtn').ontouchend = () => player.turbo = false;
-
-        function handleInput() {
-            if (!gameRunning) return;
-            if ((keys.ArrowLeft || touchLeft) && player.x > 0) player.x -= player.speed;
-            if ((keys.ArrowRight || touchRight) && player.x < (roadBox.width - 50)) player.x += player.speed;
-            player.turbo = keys.ArrowUp || player.turbo; 
-            setTimeout(handleInput, 16);
+        function updateStats() {
+            scoreDisplay.innerText = score;
+            if (score > highScore) {
+                highScore = score;
+                highScoreDisplay.innerText = highScore;
+                localStorage.setItem('turboHigh', highScore);
+            }
         }
+
+        // --- INPUTS ---
+        const bind = (id) => {
+            const el = document.getElementById(id);
+            const start = (e) => { e.preventDefault(); activeKeys[id] = true; };
+            const stop = () => activeKeys[id] = false;
+            el.addEventListener('touchstart', start);
+            el.addEventListener('touchend', stop);
+            el.addEventListener('mousedown', start);
+            el.addEventListener('mouseup', stop);
+            el.addEventListener('mouseleave', stop);
+        };
+        ['leftBtn', 'rightBtn', 'turboBtn'].forEach(bind);
+
+        window.onkeydown = (e) => activeKeys[e.key] = true;
+        window.onkeyup = (e) => activeKeys[e.key] = false;
 
         startBtn.onclick = () => {
-            initPositions();
-            setupRoad();
-            createEnemies();
+            init();
             score = 0;
-            scoreDisplay.innerText = 0;
+            updateStats();
             gameRunning = true;
-            startBtn.disabled = true;
-            pauseBtn.disabled = false;
-            handleInput();
-            update();
+            startBtn.classList.remove('pulse');
+            startBtn.innerText = "Reset";
+            gameLoop();
         };
 
         pauseBtn.onclick = () => {
-            gameRunning = !gameRunning;
-            pauseBtn.innerText = gameRunning ? "Pause" : "Resume";
-            if (gameRunning) { update(); handleInput(); }
+            if (gameRunning) {
+                gameRunning = false;
+                pauseBtn.innerText = "Play";
+            } else {
+                gameRunning = true;
+                pauseBtn.innerText = "Pause";
+                gameLoop();
+            }
         };
 
-        function gameOver() {
+        function endGame() {
             gameRunning = false;
-            cancelAnimationFrame(animationId);
             alert("Crash! Score: " + score);
-            startBtn.disabled = false;
+            startBtn.classList.add('pulse');
         }
 
-        // Handle Resize
-        window.addEventListener('resize', () => {
-            roadBox = road.getBoundingClientRect();
-        });
+        window.onresize = () => roadBox = road.getBoundingClientRect();
     </script>
 </body>
 </html>
