@@ -3,139 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Turbo Racer Gamepad</title>
+    <title>Turbo Racer: Neon Strike</title>
     <style>
         :root {
             --neon-blue: #00f2ff;
             --neon-pink: #ff0055;
-            --btn-size: clamp(60px, 15vw, 75px);
+            --neon-purple: #bc00ff;
+            --btn-size: clamp(65px, 18vw, 85px);
         }
 
+        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; }
+
         body {
-            background: #050508;
+            background: #020205;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
             color: white;
             overflow: hidden;
             touch-action: none;
         }
 
-        /* --- UI TOP --- */
+        /* --- DASHBOARD --- */
         .dashboard {
             display: flex;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px 20px;
-            border-radius: 30px;
-            margin-bottom: 10px;
-            border: 1px solid rgba(0, 242, 255, 0.3);
+            width: 95vw;
+            max-width: 400px;
+            justify-content: space-between;
+            background: rgba(10, 10, 20, 0.8);
+            padding: 12px 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            backdrop-filter: blur(5px);
         }
-        .stat span { color: var(--neon-blue); font-weight: bold; }
+        .stat { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .stat span { display: block; color: var(--neon-blue); font-size: 1.2rem; font-weight: bold; }
 
-        /* --- GAME ROAD --- */
+        /* --- GAME WORLD --- */
         .road {
             position: relative;
             width: 95vw;
             max-width: 400px;
-            height: 55vh;
-            background: #111;
-            border: 2px solid #333;
-            border-radius: 8px;
+            height: 50vh;
+            background: linear-gradient(#111, #080808);
+            border: 2px solid #222;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
-        .car { position: absolute; width: 40px; height: 70px; border-radius: 6px; z-index: 10; }
-        .player { background: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); border: 2px solid #fff; }
-        .line { width: 4px; height: 40px; background: rgba(255,255,255,0.1); position: absolute; left: 50%; transform: translateX(-50%); }
+        /* Scanline Effect */
+        .road::after {
+            content: "";
+            position: absolute; inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
 
-        /* --- GAMEPAD LAYOUT (SIDE BY SIDE) --- */
+        /* Road Markings */
+        .line { 
+            width: 6px; 
+            height: 50px; 
+            background: rgba(0, 242, 255, 0.2); 
+            position: absolute; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            border-radius: 3px;
+        }
+
+        /* --- CARS --- */
+        .car { 
+            position: absolute; 
+            width: 45px; 
+            height: 75px; 
+            border-radius: 8px; 
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+        
+        /* Details for cars */
+        .car::before { /* Windshield */
+            content: ""; position: absolute; top: 15px; left: 5px; right: 5px; height: 15px; 
+            background: rgba(0,0,0,0.5); border-radius: 4px;
+        }
+
+        .player { 
+            background: var(--neon-pink); 
+            box-shadow: 0 0 20px var(--neon-pink); 
+            border: 2px solid #fff;
+        }
+        
+        .enemy { box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+        /* --- SCREENS --- */
+        .overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            z-index: 100; text-align: center;
+        }
+        .hidden { display: none !important; }
+
+        /* --- CONTROLS --- */
         .gamepad {
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            max-width: 500px;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            width: 95vw;
+            max-width: 400px;
         }
 
         .btn {
-            width: var(--btn-size);
             height: var(--btn-size);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.1s;
-            -webkit-tap-highlight-color: transparent;
-            font-size: 1.2rem;
-        }
-
-        /* Movement Buttons */
-        .btn-move {
-            background: #222;
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            box-shadow: 0 4px 0px #008899;
-        }
-
-        .btn-move:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0px #008899;
-            background: var(--neon-blue);
-            color: #000;
-        }
-
-        /* Side System Buttons (Start/Pause) */
-        .btn-sys {
-            background: transparent;
-            border: 1px solid #555;
-            color: #aaa;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        .btn-sys:active:not(:disabled) {
-            border-color: #fff;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.1s;
+            background: #151520;
+            border: 1px solid #333;
             color: #fff;
         }
 
-        .btn-sys:disabled { opacity: 0.2; cursor: not-allowed; }
+        .btn-move { border-bottom: 4px solid #000; font-size: 1.5rem; }
+        .btn-move:active { transform: scale(0.95); border-bottom-width: 0; background: var(--neon-blue); color: #000; }
+        
+        .turbo-active { background: var(--neon-pink) !important; color: white !important; box-shadow: 0 0 15px var(--neon-pink); }
 
-        .pulse { animation: pulse-border 1.5s infinite; color: white; border-color: white; }
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); }
-            100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        .btn-sys { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        
+        .pulse { animation: pulse 1.5s infinite; background: var(--neon-blue); color: #000; border: none; }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,242,255,0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0,242,255,0); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
     <div class="dashboard">
-        <div class="stat">🏆 <span id="highScore">0</span></div>
-        <div class="stat">🔥 <span id="score">0</span></div>
-        <div class="stat">🏁 <span id="rank">6</span>/6</div>
+        <div class="stat">High Score <span id="highScore">0</span></div>
+        <div class="stat">Score <span id="score">0</span></div>
+        <div class="stat">Rank <span id="rank">6/6</span></div>
     </div>
 
-    <div class="road" id="road"></div>
+    <div class="road" id="road">
+        <div id="startScreen" class="overlay">
+            <h1 style="color:var(--neon-blue); margin:0">TURBO RACER</h1>
+            <p style="font-size: 0.8rem; opacity: 0.7;">NEON STRIKE PROTOCOL</p>
+            <button class="btn btn-sys pulse" style="width:150px; height:50px; margin-top:20px" id="startBtn">IGNITION</button>
+        </div>
+
+        <div id="gameOverScreen" class="overlay hidden">
+            <h2 style="color:var(--neon-pink)">CRITICAL FAILURE</h2>
+            <p>Score: <span id="finalScore">0</span></p>
+            <button class="btn btn-sys pulse" style="width:150px; height:50px; margin-top:20px" onclick="resetGame()">REBOOT</button>
+        </div>
+    </div>
 
     <div class="gamepad">
-        <div class="btn btn-sys pulse" id="startBtn">Start</div>
-        
         <div class="btn btn-move" id="leftBtn">◀</div>
         <div class="btn btn-move" id="turboBtn">🚀</div>
         <div class="btn btn-move" id="rightBtn">▶</div>
-
-        <div class="btn btn-sys" id="pauseBtn">Pause</div>
+        
+        <div class="btn btn-sys" id="pauseBtn" style="grid-column: span 3; height: 40px;">Pause System</div>
     </div>
 
     <script>
@@ -143,8 +183,9 @@
         const scoreDisplay = document.getElementById('score');
         const highScoreDisplay = document.getElementById('highScore');
         const rankDisplay = document.getElementById('rank');
-        const startBtn = document.getElementById('startBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScore = document.getElementById('finalScore');
 
         let gameRunning = false;
         let score = 0;
@@ -152,7 +193,7 @@
         highScoreDisplay.innerText = highScore;
 
         let roadBox = road.getBoundingClientRect();
-        let player = { x: 0, y: 0, speed: 8, turbo: false };
+        let player = { x: 0, y: 0, speed: 7, turbo: false, tilt: 0 };
         let enemies = [];
         let lines = [];
         const activeKeys = {};
@@ -163,31 +204,31 @@
 
         function init() {
             roadBox = road.getBoundingClientRect();
-            player.x = (roadBox.width / 2) - 20;
-            player.y = roadBox.height - 90;
-            playerCar.style.left = player.x + "px";
-            playerCar.style.top = player.y + "px";
-
-            // Clean & Build Road
+            player.x = (roadBox.width / 2) - 22;
+            player.y = roadBox.height - 100;
+            score = 0;
+            updateStats();
+            
+            // Generate Road Lines
             lines.forEach(l => l.remove());
             lines = [];
-            for(let i=0; i<6; i++) {
+            for(let i=0; i<8; i++) {
                 let l = document.createElement('div');
                 l.classList.add('line');
-                l.y = i * 120;
+                l.y = i * 100;
                 road.appendChild(l);
                 lines.push(l);
             }
 
-            // Create Enemies
+            // Generate Enemy Fleet
             enemies.forEach(e => e.el.remove());
             enemies = [];
-            const colors = ['#00d2ff', '#ffce00', '#00ff44', '#bc00ff', '#ffffff'];
-            for(let i=0; i<5; i++) {
+            const colors = [ '#bc00ff', '#00ff44', '#ffce00', '#00d2ff', '#ffffff' ];
+            for(let i=0; i<4; i++) {
                 let el = document.createElement('div');
                 el.classList.add('car', 'enemy');
-                el.style.backgroundColor = colors[i];
-                let obj = { el, x: Math.random()*(roadBox.width-45), y: (i*180)*-1, s: 3+Math.random()*3 };
+                el.style.backgroundColor = colors[i % colors.length];
+                let obj = { el, x: Math.random()*(roadBox.width-50), y: (i*200)*-1, s: 2 + Math.random()*3 };
                 road.appendChild(el);
                 enemies.push(obj);
             }
@@ -196,47 +237,66 @@
         function gameLoop() {
             if (!gameRunning) return;
 
-            // Movement Logic
-            if (activeKeys['ArrowLeft'] || activeKeys['leftBtn']) {
-                if (player.x > 0) player.x -= player.speed;
+            // Tilt and Move Logic
+            let targetTilt = 0;
+            if (activeKeys['leftBtn'] || activeKeys['ArrowLeft']) {
+                if (player.x > 5) player.x -= player.speed;
+                targetTilt = -10;
             }
-            if (activeKeys['ArrowRight'] || activeKeys['rightBtn']) {
-                if (player.x < (roadBox.width - 45)) player.x += player.speed;
+            if (activeKeys['rightBtn'] || activeKeys['ArrowRight']) {
+                if (player.x < (roadBox.width - 50)) player.x += player.speed;
+                targetTilt = 10;
             }
-            player.turbo = !!(activeKeys['ArrowUp'] || activeKeys['turboBtn']);
+            
+            player.tilt += (targetTilt - player.tilt) * 0.1;
+            player.turbo = !!(activeKeys['turboBtn'] || activeKeys['ArrowUp']);
+            
+            const worldSpeed = player.turbo ? 15 : 6;
 
-            // Update Road
+            // Animate Road
             lines.forEach(l => {
-                l.y += (player.turbo ? 16 : 7);
+                l.y += worldSpeed;
                 if (l.y > roadBox.height) l.y = -100;
                 l.style.top = l.y + "px";
             });
 
-            // Update Enemies
-            let passed = 0;
+            // Animate Enemies
+            let passedCount = 0;
             enemies.forEach(en => {
-                en.y += (player.turbo ? en.s + 8 : en.s);
+                en.y += player.turbo ? en.s + 10 : en.s;
+                
                 if (en.y > roadBox.height) {
-                    en.y = -200;
-                    en.x = Math.random() * (roadBox.width - 45);
+                    en.y = -300;
+                    en.x = Math.random() * (roadBox.width - 50);
                     score += 10;
                     updateStats();
                 }
+                
                 en.el.style.top = en.y + "px";
                 en.el.style.left = en.x + "px";
-                if (isCollide(playerCar, en.el)) endGame();
-                if (player.y > en.y) passed++;
+                
+                // Collision with small buffer for "fairness"
+                if (isCollide(playerCar, en.el, 5)) endGame();
+                if (player.y > en.y) passedCount++;
             });
 
-            rankDisplay.innerText = 6 - passed;
+            rankDisplay.innerText = `${5 - passedCount}/5`;
             playerCar.style.left = player.x + "px";
+            playerCar.style.top = player.y + "px";
+            playerCar.style.transform = `rotate(${player.tilt}deg)`;
+
             requestAnimationFrame(gameLoop);
         }
 
-        function isCollide(a, b) {
+        function isCollide(a, b, buffer = 0) {
             let r1 = a.getBoundingClientRect();
             let r2 = b.getBoundingClientRect();
-            return !(r1.bottom < r2.top || r1.top > r2.bottom || r1.right < r2.left || r1.left > r2.right);
+            return !(
+                r1.bottom - buffer < r2.top || 
+                r1.top + buffer > r2.bottom || 
+                r1.right - buffer < r2.left || 
+                r1.left + buffer > r2.right
+            );
         }
 
         function updateStats() {
@@ -248,48 +308,59 @@
             }
         }
 
-        // --- INPUTS ---
-        const bind = (id) => {
+        // --- INPUT BINDINGS ---
+        function setupInput(id) {
             const el = document.getElementById(id);
-            const start = (e) => { e.preventDefault(); activeKeys[id] = true; };
-            const stop = () => activeKeys[id] = false;
-            el.addEventListener('touchstart', start);
-            el.addEventListener('touchend', stop);
-            el.addEventListener('mousedown', start);
-            el.addEventListener('mouseup', stop);
-            el.addEventListener('mouseleave', stop);
-        };
-        ['leftBtn', 'rightBtn', 'turboBtn'].forEach(bind);
+            const press = (e) => { 
+                e.preventDefault(); 
+                activeKeys[id] = true; 
+                if(id === 'turboBtn') el.classList.add('turbo-active');
+            };
+            const release = () => { 
+                activeKeys[id] = false; 
+                if(id === 'turboBtn') el.classList.remove('turbo-active');
+            };
+            el.addEventListener('touchstart', press);
+            el.addEventListener('touchend', release);
+            el.addEventListener('mousedown', press);
+            el.addEventListener('mouseup', release);
+            el.addEventListener('mouseleave', release);
+        }
+        ['leftBtn', 'rightBtn', 'turboBtn'].forEach(setupInput);
 
         window.onkeydown = (e) => activeKeys[e.key] = true;
         window.onkeyup = (e) => activeKeys[e.key] = false;
 
-        startBtn.onclick = () => {
-            init();
-            score = 0;
-            updateStats();
+        document.getElementById('startBtn').onclick = () => {
+            startScreen.classList.add('hidden');
             gameRunning = true;
-            startBtn.classList.remove('pulse');
-            startBtn.innerText = "Reset";
+            init();
             gameLoop();
-        };
-
-        pauseBtn.onclick = () => {
-            if (gameRunning) {
-                gameRunning = false;
-                pauseBtn.innerText = "Play";
-            } else {
-                gameRunning = true;
-                pauseBtn.innerText = "Pause";
-                gameLoop();
-            }
         };
 
         function endGame() {
             gameRunning = false;
-            alert("Crash! Score: " + score);
-            startBtn.classList.add('pulse');
+            finalScore.innerText = score;
+            gameOverScreen.classList.remove('hidden');
         }
+
+        function resetGame() {
+            gameOverScreen.classList.add('hidden');
+            init();
+            gameRunning = true;
+            gameLoop();
+        }
+
+        document.getElementById('pauseBtn').onclick = function() {
+            if(!gameRunning && startScreen.classList.contains('hidden')) {
+                gameRunning = true;
+                this.innerText = "Pause System";
+                gameLoop();
+            } else {
+                gameRunning = false;
+                this.innerText = "Resume Mission";
+            }
+        };
 
         window.onresize = () => roadBox = road.getBoundingClientRect();
     </script>
