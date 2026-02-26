@@ -3,366 +3,637 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Turbo Racer: Neon Strike</title>
+    <title>Himalayan Tilt: Real Road · Small Trees</title>
     <style>
-        :root {
-            --neon-blue: #00f2ff;
-            --neon-pink: #ff0055;
-            --neon-purple: #bc00ff;
-            --btn-size: clamp(65px, 18vw, 85px);
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; }
-
         body {
-            background: #020205;
             margin: 0;
+            background: #3b6f8f;  /* sky */
+            font-family: 'Orbitron', 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            min-height: 100vh;
+            touch-action: pan-y pinch-zoom; /* allow only vertical browser scroll if needed */
+            padding: 0 0 10px 0;
+            background: linear-gradient(180deg, #96c5e0 0%, #d1e5f0 80%);
+        }
+
+        /* main card with wooden texture */
+        .game-wrapper {
+            width: 100vw;
+            max-width: 440px;
+            background: #46653e;
+            background-image: radial-gradient(circle at 30% 40%, #5f7e4e 2px, transparent 2px), 
+                              radial-gradient(circle at 70% 80%, #3b5e32 3px, transparent 3px);
+            border-radius: 40px 40px 0 0;
+            padding: 18px 12px 20px 12px;
+            box-shadow: 0 -8px 0 #2e4627, inset 0 2px 10px #b3a166;
+            border-top: 6px solid #b48b4b;
+        }
+
+        /* dashboard : simple stone slate */
+        .dashboard {
+            display: flex;
+            justify-content: space-between;
+            background: #364d39;
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin-bottom: 15px;
+            border: 3px solid #c6a15b;
+            color: #f5eac1;
+            font-weight: bold;
+            box-shadow: inset 0 -3px 5px #1d2d1d;
+        }
+        .stat {
+            text-align: center;
+            text-shadow: 2px 2px 0 #1f3a2d;
+            font-size: 0.8rem;
+        }
+        .stat span {
+            display: block;
+            font-size: 1.5rem;
+            color: #fad675;
+        }
+
+        /* --- ROAD with realistic perspective and small trees --- */
+        .road-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 9 / 16;  /* classic mobile tall aspect */
+            background: #84a56b;    /* base grass */
+            border-radius: 60px 60px 30px 30px;
+            overflow: hidden;
+            border: 6px solid #7d633c;
+            box-shadow: inset 0 0 0 2px #b98f4f, 0 20px 20px -8px black;
+        }
+
+        /* REAL ROAD surface: two-lane nepali highway */
+        .road-surface {
+            position: absolute;
+            bottom: 0;
+            left: 8%;
+            width: 84%;
+            height: 82%;
+            background: #3e5042;        /* asphalt base */
+            background-image: linear-gradient(90deg, #6b7c6b 1px, transparent 1px),
+                              linear-gradient(60deg, #576e5a 2px, transparent 2px);
+            background-size: 30px 100%, 60px 100%;
+            border-radius: 100px 100px 30px 30px;
+            box-shadow: inset 0 -10px 15px #1d2f1d, inset 0 10px 10px #5a7555, 0 -5px 0 #9f874b;
+            border: 4px solid #a98148;
+            border-top: 2px solid #e0b86e;
+            z-index: 10;
+        }
+
+        /* road middle dashed line – typical */
+        .road-line {
+            position: absolute;
+            width: 14px;
+            height: 50px;
+            background: #f3cd81;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+            box-shadow: 0 0 0 2px #976d36, 0 0 15px #ffe28a;
+            z-index: 12;
+        }
+
+        /* SMALL TREES on each side – realistic, short */
+        .tree-side {
+            position: absolute;
+            bottom: 8%;
+            width: 100%;
+            height: 22%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 6px;
+            z-index: 8;
+            pointer-events: none;
+        }
+
+        .left-tree-area, .right-tree-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            height: 100%;
+        }
+
+        .small-tree {
+            width: 20px;
+            height: 40px;
+            background: #527a3c;
+            border-radius: 60% 60% 20% 20% / 100% 100% 20% 20%;
+            clip-path: polygon(20% 100%, 35% 40%, 50% 0%, 65% 40%, 80% 100%);
+            background: linear-gradient(145deg, #407d4a, #25562b);
+            border-bottom: 5px solid #6b4c28;
+            position: relative;
+            bottom: 0;
+            box-shadow: -2px 0 5px #1b3d1b;
+        }
+        .small-tree::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 6px;
+            width: 8px;
+            height: 14px;
+            background: #7b623a;
+            border-radius: 10px;
+        }
+
+        /* distant hills (low profile) */
+        .hill-back {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(180deg, #668a5c, #4f7a4f);
+            clip-path: polygon(0% 100%, 7% 40%, 15% 70%, 25% 20%, 38% 60%, 50% 10%, 62% 40%, 75% 20%, 88% 60%, 100% 30%, 100% 100%);
+            opacity: 0.7;
+            z-index: 5;
+        }
+
+        /* --- CARS: real micro / suv style --- */
+        .car {
+            position: absolute;
+            width: 48px;
+            height: 92px;
+            border-radius: 18px 18px 10px 10px;
+            z-index: 30;
+            transition: transform 0.08s ease-out;
+            box-shadow: 0 12px 0 #1f1f1f, 0 15px 15px black;
+        }
+        .car::before { /* windscreen */
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 6px;
+            right: 6px;
+            height: 24px;
+            background: linear-gradient(145deg, #d0ecff, #598bb3);
+            border-radius: 8px 8px 4px 4px;
+            border: 1px solid #1a2f3a;
+        }
+        .car::after { /* roof */
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 6px;
+            right: 6px;
+            height: 12px;
+            background: #3d3d3d;
+            border-radius: 10px 10px 0 0;
+            border: 1px solid #202020;
+        }
+        .player {
+            background: linear-gradient(145deg, #bc3f2b, #982e1d);
+            border: 3px solid #fbdd7e;
+        }
+        .enemy {
+            background: linear-gradient(145deg, #1c6d5e, #135a4d);
+            border: 2px solid #f7b731;
+        }
+
+        /* --- overlays (himalayan touch) --- */
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: #28504be0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            font-family: 'Orbitron', 'Segoe UI', sans-serif;
-            color: white;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        /* --- DASHBOARD --- */
-        .dashboard {
-            display: flex;
-            width: 95vw;
-            max-width: 400px;
-            justify-content: space-between;
-            background: rgba(10, 10, 20, 0.8);
-            padding: 12px 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(0, 242, 255, 0.2);
-            backdrop-filter: blur(5px);
-        }
-        .stat { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .stat span { display: block; color: var(--neon-blue); font-size: 1.2rem; font-weight: bold; }
-
-        /* --- GAME WORLD --- */
-        .road {
-            position: relative;
-            width: 95vw;
-            max-width: 400px;
-            height: 50vh;
-            background: linear-gradient(#111, #080808);
-            border: 2px solid #222;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        /* Scanline Effect */
-        .road::after {
-            content: "";
-            position: absolute; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 4px, 3px 100%;
-            pointer-events: none;
-            z-index: 20;
-        }
-
-        /* Road Markings */
-        .line { 
-            width: 6px; 
-            height: 50px; 
-            background: rgba(0, 242, 255, 0.2); 
-            position: absolute; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            border-radius: 3px;
-        }
-
-        /* --- CARS --- */
-        .car { 
-            position: absolute; 
-            width: 45px; 
-            height: 75px; 
-            border-radius: 8px; 
-            z-index: 10;
-            transition: transform 0.1s;
-        }
-        
-        /* Details for cars */
-        .car::before { /* Windshield */
-            content: ""; position: absolute; top: 15px; left: 5px; right: 5px; height: 15px; 
-            background: rgba(0,0,0,0.5); border-radius: 4px;
-        }
-
-        .player { 
-            background: var(--neon-pink); 
-            box-shadow: 0 0 20px var(--neon-pink); 
-            border: 2px solid #fff;
-        }
-        
-        .enemy { box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-
-        /* --- SCREENS --- */
-        .overlay {
-            position: absolute; inset: 0;
-            background: rgba(0,0,0,0.85);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 100; text-align: center;
+            z-index: 100;
+            border: 8px double #e7b55c;
+            color: #fcf0d5;
+            text-align: center;
+            backdrop-filter: blur(2px);
         }
         .hidden { display: none !important; }
 
-        /* --- CONTROLS --- */
-        .gamepad {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            width: 95vw;
-            max-width: 400px;
+        /* --- minimal gamepad: only pause/restart, steering via TILT --- */
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            gap: 12px;
+        }
+        .info-btn {
+            flex: 1;
+            background: #516f4b;
+            border: 3px solid #cbaa63;
+            border-radius: 40px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #efeac5;
+            box-shadow: 0 5px 0 #2b4027;
+            cursor: pointer;
+            touch-action: manipulation;
+            text-transform: uppercase;
+        }
+        .info-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #2f462b; }
+
+        .turbo-indicator {
+            background: #b9853b;
+            color: #281e0e;
+            border-color: #ffdb9f;
+            transition: 0.2s;
+        }
+        .turbo-active {
+            background: #f3b151;
+            box-shadow: 0 0 15px #f5c451;
         }
 
-        .btn {
-            height: var(--btn-size);
-            border-radius: 20px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.1s;
-            background: #151520;
-            border: 1px solid #333;
-            color: #fff;
-        }
-
-        .btn-move { border-bottom: 4px solid #000; font-size: 1.5rem; }
-        .btn-move:active { transform: scale(0.95); border-bottom-width: 0; background: var(--neon-blue); color: #000; }
-        
-        .turbo-active { background: var(--neon-pink) !important; color: white !important; box-shadow: 0 0 15px var(--neon-pink); }
-
-        .btn-sys { font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-        
-        .pulse { animation: pulse 1.5s infinite; background: var(--neon-blue); color: #000; border: none; }
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0,242,255,0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0,242,255,0); }
-            100% { transform: scale(1); }
+        /* tilt hint */
+        .hint {
+            color: #fff2cb;
+            font-size: 0.8rem;
+            margin: 8px 0 0 0;
+            background: #2b573b80;
+            padding: 6px 12px;
+            border-radius: 40px;
+            border: 1px solid #e9c573;
         }
     </style>
 </head>
 <body>
-
+<div class="game-wrapper">
+    <!-- dashboard -->
     <div class="dashboard">
-        <div class="stat">High Score <span id="highScore">0</span></div>
-        <div class="stat">Score <span id="score">0</span></div>
-        <div class="stat">Rank <span id="rank">6/6</span></div>
+        <div class="stat">🏁 DIST <span id="score">0</span></div>
+        <div class="stat">🏆 HIGH <span id="highScore">0</span></div>
+        <div class="stat">🚘 RANK <span id="rank">5/5</span></div>
     </div>
 
-    <div class="road" id="road">
+    <!-- road container with real trees on both sides -->
+    <div class="road-container" id="roadContainer">
+        <!-- background simple hill contour -->
+        <div class="hill-back"></div>
+
+        <!-- small trees left side -->
+        <div class="tree-side">
+            <div class="left-tree-area">
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+            </div>
+            <div class="right-tree-area">
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+                <div class="small-tree"></div>
+            </div>
+        </div>
+
+        <!-- road surface (realistic asphalt) -->
+        <div class="road-surface" id="roadSurface"></div>
+
+        <!-- overlay screens -->
         <div id="startScreen" class="overlay">
-            <h1 style="color:var(--neon-blue); margin:0">TURBO RACER</h1>
-            <p style="font-size: 0.8rem; opacity: 0.7;">NEON STRIKE PROTOCOL</p>
-            <button class="btn btn-sys pulse" style="width:150px; height:50px; margin-top:20px" id="startBtn">IGNITION</button>
+            <h1 style="color: #ffd87a;">🏔️ NEPAL TILT</h1>
+            <p style="margin: 8px">move phone left/right to steer</p>
+            <div class="info-btn" style="width:160px; background:#ba954b;" id="startBtn">START ENGINE</div>
+            <div class="hint">🌲 small trees · real road 🌲</div>
         </div>
 
         <div id="gameOverScreen" class="overlay hidden">
-            <h2 style="color:var(--neon-pink)">CRITICAL FAILURE</h2>
-            <p>Score: <span id="finalScore">0</span></p>
-            <button class="btn btn-sys pulse" style="width:150px; height:50px; margin-top:20px" onclick="resetGame()">REBOOT</button>
+            <h2 style="color:#f7cd7c;">🏁 FINISH</h2>
+            <p style="font-size:2.5rem;"><span id="finalScore">0</span></p>
+            <div class="info-btn" style="background:#6b7a53;" onclick="resetGame()">RESTART</div>
         </div>
     </div>
 
-    <div class="gamepad">
-        <div class="btn btn-move" id="leftBtn">◀</div>
-        <div class="btn btn-move" id="turboBtn">🚀</div>
-        <div class="btn btn-move" id="rightBtn">▶</div>
-        
-        <div class="btn btn-sys" id="pauseBtn" style="grid-column: span 3; height: 40px;">Pause System</div>
+    <!-- bottom panel: turbo + pause (steering by tilt) -->
+    <div style="display: flex; gap: 10px; margin-top: 12px;">
+        <div class="info-btn" id="turboBtn">⚡ TURBO</div>
+        <div class="info-btn" id="pauseBtn">⏸️ PAUSE</div>
+        <div class="info-btn" id="restartBtn" onclick="resetGame()">🔄 RESET</div>
     </div>
+    <div class="hint" style="text-align:center;">📱 tilt left / right → car moves</div>
+</div>
 
-    <script>
-        const road = document.getElementById('road');
-        const scoreDisplay = document.getElementById('score');
-        const highScoreDisplay = document.getElementById('highScore');
-        const rankDisplay = document.getElementById('rank');
+<script>
+    (function() {
+        // ----- ELEMENTS -----
+        const container = document.getElementById('roadContainer');
+        const scoreSpan = document.getElementById('score');
+        const highScoreSpan = document.getElementById('highScore');
+        const rankSpan = document.getElementById('rank');
         const startScreen = document.getElementById('startScreen');
         const gameOverScreen = document.getElementById('gameOverScreen');
-        const finalScore = document.getElementById('finalScore');
+        const finalScoreSpan = document.getElementById('finalScore');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const turboBtn = document.getElementById('turboBtn');
 
+        // Game state
         let gameRunning = false;
         let score = 0;
-        let highScore = localStorage.getItem('turboHigh') || 0;
-        highScoreDisplay.innerText = highScore;
+        let highScore = localStorage.getItem('tiltHigh') || 0;
+        highScoreSpan.innerText = highScore;
 
-        let roadBox = road.getBoundingClientRect();
-        let player = { x: 0, y: 0, speed: 7, turbo: false, tilt: 0 };
+        let containerRect = container.getBoundingClientRect();
+
+        // Player object
+        let player = {
+            x: 0,               // left position in px
+            y: 0,
+            turbo: false,
+            tiltOffset: 0
+        };
+
         let enemies = [];
         let lines = [];
-        const activeKeys = {};
 
+        // Tilt variables
+        let currentTilt = 0;            // -45 to 45 normalized
+        let targetTilt = 0;
+        const TILT_SENSITIVITY = 1.6;    // how strong steering reacts
+
+        // Player car element
         const playerCar = document.createElement('div');
         playerCar.classList.add('car', 'player');
-        road.appendChild(playerCar);
+        container.appendChild(playerCar);
 
-        function init() {
-            roadBox = road.getBoundingClientRect();
-            player.x = (roadBox.width / 2) - 22;
-            player.y = roadBox.height - 100;
+        // ----- helper: update container rect on resize/orientation-----
+        function updateContainerRect() {
+            containerRect = container.getBoundingClientRect();
+        }
+        window.addEventListener('resize', updateContainerRect);
+        window.addEventListener('orientationchange', updateContainerRect);
+
+        // ----- INIT / RESET WORLD (real road) -----
+        function initWorld() {
+            updateContainerRect();
+            // player start near bottom, centered
+            player.x = (containerRect.width / 2) - 24;
+            player.y = containerRect.height - 110;
+            player.tiltOffset = 0;
+
             score = 0;
-            updateStats();
-            
-            // Generate Road Lines
+            updateScore();
+
+            // clear old lines
             lines.forEach(l => l.remove());
             lines = [];
-            for(let i=0; i<8; i++) {
-                let l = document.createElement('div');
-                l.classList.add('line');
-                l.y = i * 100;
-                road.appendChild(l);
-                lines.push(l);
+
+            // create dashed middle lines (8 pieces)
+            for (let i = 0; i < 10; i++) {
+                let line = document.createElement('div');
+                line.classList.add('road-line');
+                line.y = i * 80 - 90;
+                container.appendChild(line);
+                lines.push(line);
             }
 
-            // Generate Enemy Fleet
+            // clear old enemies
             enemies.forEach(e => e.el.remove());
             enemies = [];
-            const colors = [ '#bc00ff', '#00ff44', '#ffce00', '#00d2ff', '#ffffff' ];
-            for(let i=0; i<4; i++) {
+
+            // create 5 enemy cars (like local micros)
+            const enemyColors = ['#2f7760', '#966f47', '#3f6b82', '#74653a', '#4f765c'];
+            for (let i = 0; i < 5; i++) {
                 let el = document.createElement('div');
                 el.classList.add('car', 'enemy');
-                el.style.backgroundColor = colors[i % colors.length];
-                let obj = { el, x: Math.random()*(roadBox.width-50), y: (i*200)*-1, s: 2 + Math.random()*3 };
-                road.appendChild(el);
+                el.style.backgroundColor = enemyColors[i % enemyColors.length];
+                let obj = {
+                    el,
+                    x: 18 + Math.random() * (containerRect.width - 70),
+                    y: (i * 170) * -1 - 150,
+                    speed: 2.2 + Math.random() * 3.2
+                };
+                container.appendChild(el);
                 enemies.push(obj);
             }
         }
 
-        function gameLoop() {
-            if (!gameRunning) return;
-
-            // Tilt and Move Logic
-            let targetTilt = 0;
-            if (activeKeys['leftBtn'] || activeKeys['ArrowLeft']) {
-                if (player.x > 5) player.x -= player.speed;
-                targetTilt = -10;
+        // update score & highscore
+        function updateScore() {
+            scoreSpan.innerText = score;
+            if (score > highScore) {
+                highScore = score;
+                highScoreSpan.innerText = highScore;
+                localStorage.setItem('tiltHigh', highScore);
             }
-            if (activeKeys['rightBtn'] || activeKeys['ArrowRight']) {
-                if (player.x < (roadBox.width - 50)) player.x += player.speed;
-                targetTilt = 10;
-            }
-            
-            player.tilt += (targetTilt - player.tilt) * 0.1;
-            player.turbo = !!(activeKeys['turboBtn'] || activeKeys['ArrowUp']);
-            
-            const worldSpeed = player.turbo ? 15 : 6;
-
-            // Animate Road
-            lines.forEach(l => {
-                l.y += worldSpeed;
-                if (l.y > roadBox.height) l.y = -100;
-                l.style.top = l.y + "px";
-            });
-
-            // Animate Enemies
-            let passedCount = 0;
-            enemies.forEach(en => {
-                en.y += player.turbo ? en.s + 10 : en.s;
-                
-                if (en.y > roadBox.height) {
-                    en.y = -300;
-                    en.x = Math.random() * (roadBox.width - 50);
-                    score += 10;
-                    updateStats();
-                }
-                
-                en.el.style.top = en.y + "px";
-                en.el.style.left = en.x + "px";
-                
-                // Collision with small buffer for "fairness"
-                if (isCollide(playerCar, en.el, 5)) endGame();
-                if (player.y > en.y) passedCount++;
-            });
-
-            rankDisplay.innerText = `${5 - passedCount}/5`;
-            playerCar.style.left = player.x + "px";
-            playerCar.style.top = player.y + "px";
-            playerCar.style.transform = `rotate(${player.tilt}deg)`;
-
-            requestAnimationFrame(gameLoop);
         }
 
-        function isCollide(a, b, buffer = 0) {
+        // collision detection
+        function collide(a, b, buffer = 6) {
             let r1 = a.getBoundingClientRect();
             let r2 = b.getBoundingClientRect();
             return !(
-                r1.bottom - buffer < r2.top || 
-                r1.top + buffer > r2.bottom || 
-                r1.right - buffer < r2.left || 
+                r1.bottom - buffer < r2.top ||
+                r1.top + buffer > r2.bottom ||
+                r1.right - buffer < r2.left ||
                 r1.left + buffer > r2.right
             );
         }
 
-        function updateStats() {
-            scoreDisplay.innerText = score;
-            if (score > highScore) {
-                highScore = score;
-                highScoreDisplay.innerText = highScore;
-                localStorage.setItem('turboHigh', highScore);
-            }
-        }
-
-        // --- INPUT BINDINGS ---
-        function setupInput(id) {
-            const el = document.getElementById(id);
-            const press = (e) => { 
-                e.preventDefault(); 
-                activeKeys[id] = true; 
-                if(id === 'turboBtn') el.classList.add('turbo-active');
-            };
-            const release = () => { 
-                activeKeys[id] = false; 
-                if(id === 'turboBtn') el.classList.remove('turbo-active');
-            };
-            el.addEventListener('touchstart', press);
-            el.addEventListener('touchend', release);
-            el.addEventListener('mousedown', press);
-            el.addEventListener('mouseup', release);
-            el.addEventListener('mouseleave', release);
-        }
-        ['leftBtn', 'rightBtn', 'turboBtn'].forEach(setupInput);
-
-        window.onkeydown = (e) => activeKeys[e.key] = true;
-        window.onkeyup = (e) => activeKeys[e.key] = false;
-
-        document.getElementById('startBtn').onclick = () => {
-            startScreen.classList.add('hidden');
-            gameRunning = true;
-            init();
-            gameLoop();
-        };
-
         function endGame() {
+            if (!gameRunning) return;
             gameRunning = false;
-            finalScore.innerText = score;
+            finalScoreSpan.innerText = score;
             gameOverScreen.classList.remove('hidden');
         }
 
-        function resetGame() {
-            gameOverScreen.classList.add('hidden');
-            init();
-            gameRunning = true;
-            gameLoop();
+        // ----- TILT (deviceorientation) -----
+        function handleOrientation(event) {
+            if (!gameRunning) return;
+
+            // gamma: left (-90) to right (90). We use this for steering.
+            let gamma = event.gamma; // range -90 to 90
+            if (gamma == null) return;
+
+            // clamp to more realistic: -45 to 45
+            let raw = Math.min(45, Math.max(-45, gamma)) / 45; // -1 .. 1
+            targetTilt = raw * TILT_SENSITIVITY;  // about -1.6 .. 1.6
+
+            // smoothing
+            currentTilt += (targetTilt - currentTilt) * 0.15;
+
+            // apply movement: positive tilt = move right? Usually gamma positive = right tilt
+            let move = currentTilt * 9;  // pixels per frame (approx)
+            let newX = player.x + move;
+
+            // boundaries (car width ~48)
+            if (newX >= 8 && newX <= containerRect.width - 56) {
+                player.x = newX;
+            } else {
+                // clamp but also allow some push
+                if (newX < 8) player.x = 8;
+                if (newX > containerRect.width - 56) player.x = containerRect.width - 56;
+            }
+
+            // small visual tilt on car
+            player.tiltOffset = currentTilt * 7;
         }
 
-        document.getElementById('pauseBtn').onclick = function() {
-            if(!gameRunning && startScreen.classList.contains('hidden')) {
-                gameRunning = true;
-                this.innerText = "Pause System";
-                gameLoop();
+        // request permission for iOS and add listener
+        function requestTiltPermission() {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                // iOS 13+ need permission
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                        } else {
+                            alert('tilt steering disabled. use keyboard?');
+                        }
+                    }).catch(console.error);
             } else {
-                gameRunning = false;
-                this.innerText = "Resume Mission";
+                // android / desktop
+                window.addEventListener('deviceorientation', handleOrientation);
             }
+        }
+
+        // ----- GAME LOOP -----
+        function gameLoop() {
+            if (!gameRunning) return;
+
+            // turbo via button OR keyboard (arrow up)
+            let turboActive = player.turbo;  // updated via button events
+
+            // base speed (world scroll)
+            let scrollSpeed = turboActive ? 18 : 8;
+
+            // move road lines
+            lines.forEach(l => {
+                l.y += scrollSpeed;
+                if (l.y > containerRect.height + 70) l.y = -100;
+                l.style.top = l.y + 'px';
+            });
+
+            // move enemies
+            let passedCount = 0;
+            enemies.forEach(en => {
+                en.y += turboActive ? en.speed + 13 : en.speed + 2.5;
+
+                if (en.y > containerRect.height + 150) {
+                    en.y = -220 - Math.random() * 150;
+                    en.x = 18 + Math.random() * (containerRect.width - 70);
+                    score += 20;
+                    updateScore();
+                }
+
+                en.el.style.top = en.y + 'px';
+                en.el.style.left = en.x + 'px';
+
+                if (collide(playerCar, en.el, 8)) endGame();
+
+                // count cars that are below player (higher y)
+                if (player.y < en.y + 30) passedCount++;
+            });
+
+            rankSpan.innerText = `${5 - Math.min(5, passedCount)}/5`;
+
+            // update player position (tilt already updated via event, but we also set y constant)
+            playerCar.style.left = player.x + 'px';
+            playerCar.style.top = player.y + 'px';
+            playerCar.style.transform = `rotate(${player.tiltOffset}deg)`;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ----- BUTTON CONTROLS (turbo, pause) + keyboard fallback -----
+        // Turbo button (hold)
+        let turboPressed = false;
+        turboBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            player.turbo = true;
+            turboBtn.classList.add('turbo-active');
+        });
+        turboBtn.addEventListener('mouseup', () => {
+            player.turbo = false;
+            turboBtn.classList.remove('turbo-active');
+        });
+        turboBtn.addEventListener('mouseleave', () => {
+            player.turbo = false;
+            turboBtn.classList.remove('turbo-active');
+        });
+        turboBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            player.turbo = true;
+            turboBtn.classList.add('turbo-active');
+        });
+        turboBtn.addEventListener('touchend', () => {
+            player.turbo = false;
+            turboBtn.classList.remove('turbo-active');
+        });
+        turboBtn.addEventListener('touchcancel', () => {
+            player.turbo = false;
+            turboBtn.classList.remove('turbo-active');
+        });
+
+        // keyboard turbo (ArrowUp)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                player.turbo = true;
+                turboBtn.classList.add('turbo-active');
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                player.turbo = false;
+                turboBtn.classList.remove('turbo-active');
+            }
+        });
+
+        // Start button
+        document.getElementById('startBtn').addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            initWorld();
+            gameRunning = true;
+            requestTiltPermission();   // set up tilt listener
+            gameLoop();
+        });
+
+        // Pause
+        pauseBtn.addEventListener('click', () => {
+            if (gameRunning) {
+                gameRunning = false;
+                pauseBtn.innerText = '▶️ RESUME';
+            } else {
+                if (!startScreen.classList.contains('hidden')) return;
+                gameRunning = true;
+                pauseBtn.innerText = '⏸️ PAUSE';
+                gameLoop();
+            }
+        });
+
+        // global reset
+        window.resetGame = function() {
+            gameOverScreen.classList.add('hidden');
+            initWorld();
+            gameRunning = true;
+            pauseBtn.innerText = '⏸️ PAUSE';
+            gameLoop();
         };
 
-        window.onresize = () => roadBox = road.getBoundingClientRect();
-    </script>
+        // disable context menu
+        document.querySelectorAll('.info-btn').forEach(b => {
+            b.addEventListener('contextmenu', e => e.preventDefault());
+        });
+
+        // initial container rect
+        updateContainerRect();
+    })();
+</script>
 </body>
 </html>
